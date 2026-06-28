@@ -23,8 +23,23 @@
         .container { background: var(--card-bg); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); width: 100%; max-width: 950px; }
         
         .header-app { text-align: center; margin-bottom: 35px; }
-        .header-app h1 { font-size: 2rem; color: var(--primary); font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .header-app h4 { color: var(--text-muted); font-weight: 400; font-size: 0.95rem; margin-top: 5px; }
+        .header-app h1 { font-size: 2rem; color: var(--primary); font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px; }
+        .header-app h4 { color: var(--text-muted); font-weight: 400; font-size: 0.95rem; margin-top: 0; margin-bottom: 15px; }
+        
+        /* Box Peringatan Keamanan Merah */
+        .warning-box {
+            display: block;
+            background-color: #fef2f2;
+            color: var(--danger);
+            border: 1px solid #fecaca;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin: 15px auto 0 auto;
+            max-width: 600px;
+            text-align: center;
+        }
         
         .card { display: none; }
         .card.active { display: block; animation: fadeIn 0.4s ease-in-out; }
@@ -70,7 +85,6 @@
         .admin-section { display: none; padding: 25px; border-radius: 14px; background: #f8fafc; border: 1px dashed var(--border-color); }
         .loading-overlay { display:none; text-align: center; color: var(--primary); font-weight: 600; margin-bottom: 15px; }
 
-        /* Media Queries untuk Mobile & Tablet (Responsive) */
         @media screen and (max-width: 768px) {
             .container { padding: 20px; }
             .dashboard-header { flex-direction: column; align-items: flex-start; gap: 15px; }
@@ -89,11 +103,13 @@
     <div class="header-app">
         <h1>💡 GAKLUPPPA</h1>
         <h4>Gerbang Akses Kelompok Lupa-Lupa DPPPA</h4>
+        <div class="warning-box">
+            <strong>Peringatan:</strong> Jangan masukkan akun bank/rekening, atau akun pribadi yang bersifat sensitif lainnya.
+        </div>
     </div>
 
     <div id="loading" class="loading-overlay">🔄 Memproses data...</div>
 
-    <!-- 1. HALAMAN LOGIN -->
     <div id="loginCard" class="card active">
         <div class="form-group">
             <label>Username Anda</label>
@@ -103,7 +119,6 @@
         <div class="link-btn" onclick="switchCard('registerCard')">Belum terdaftar? Registrasi Akun Baru Disini</div>
     </div>
 
-    <!-- 2. HALAMAN REGISTRASI -->
     <div id="registerCard" class="card">
         <div class="form-group">
             <label>Nama Lengkap</label>
@@ -121,7 +136,6 @@
         <div class="link-btn" onclick="switchCard('loginCard')">Sudah punya akun? Kembali ke Login</div>
     </div>
 
-    <!-- 3. HALAMAN DASHBOARD -->
     <div id="dashboardCard" class="card">
         <div class="dashboard-header">
             <div class="welcome-text" id="welcomeText">Halo, Pegawai 👋</div>
@@ -132,7 +146,6 @@
             <strong>Sistem Multi-Akun Cloud Aktif:</strong> Setiap pegawai diizinkan menyimpan maksimal <strong>10 akun website</strong>. Akun Anda ditandai warna biru di posisi teratas.
         </div>
 
-        <!-- FORM TAMBAH / EDIT AKUN -->
         <div id="userCrudSection">
             <h3 style="margin-bottom: 10px; font-size: 1.1rem;">➕ Tambah / Perbarui Website Saya <span class="counter-badge" id="accountCounter">0 / 10 Akun</span></h3>
             <div class="crud-box">
@@ -152,7 +165,6 @@
             </div>
         </div>
 
-        <!-- TABEL UTAMA -->
         <div class="table-responsive">
             <table>
                 <thead>
@@ -165,12 +177,10 @@
                     </tr>
                 </thead>
                 <tbody id="passwordTableBody">
-                    <!-- Diisi via API -->
-                </tbody>
+                    </tbody>
             </table>
         </div>
 
-        <!-- PANEL ADMIN -->
         <div id="adminPanel" class="admin-section">
             <h3 style="font-size: 1.1rem; margin-bottom: 5px;">🛠️ Panel Admin (Reset Username)</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Cari menggunakan NIP untuk merubah username rekan kerja yang lupa.</p>
@@ -194,7 +204,7 @@
 </div>
 
 <script>
-    // ⚠️ MASUKKAN KEMBALI URL GOOGLE SCRIPT ANDA DI SINI
+    // ⚠️ GANTI TULISAN DI BAWAH INI DENGAN URL GOOGLE SCRIPT ANDA YANG SEBENARNYA
     const API_URL = "https://script.google.com/macros/s/AKfycbxZaJNYzZx8XQs7qYTa9lNTEuW4yXq4J-QNwUbh0QvKpBqeIVA83BJqrBYZT0utIjMB2g/exec";
 
     let currentUser = null;
@@ -301,7 +311,6 @@
         const userAccounts = currentUser.accounts || [];
         document.getElementById('accountCounter').innerText = `${userAccounts.length} / 10 Akun`;
 
-        // Render Akun Pribadi (Tampilkan Semua Detail)
         userAccounts.forEach((acc) => {
             const tr = document.createElement('tr');
             tr.classList.add('highlight');
@@ -315,9 +324,7 @@
             tbody.appendChild(tr);
         });
 
-        // Render Akun Pegawai Lain (Hanya 1 Baris Informasi Saja)
         globalUsersData.filter(u => u.nip !== currentUser.nip && u.username !== "luf3159").forEach(otherUser => {
-            // Cek apakah pegawai lain tersebut memiliki minimal 1 data website
             if (otherUser.accounts && otherUser.accounts.length > 0) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
