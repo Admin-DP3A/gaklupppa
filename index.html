@@ -67,8 +67,9 @@
         <h4>Gerbang Akses Kelompok Lupa-Lupa DPPPA</h4>
     </div>
 
-    <div id="loading" class="loading-overlay">🔄 Memproses data ke Spreadsheet...</div>
+    <div id="loading" class="loading-overlay">🔄 Memproses data...</div>
 
+    <!-- 1. HALAMAN LOGIN -->
     <div id="loginCard" class="card active">
         <div class="form-group">
             <label>Username Anda</label>
@@ -78,6 +79,7 @@
         <div class="link-btn" onclick="switchCard('registerCard')">Belum terdaftar? Registrasi Akun Baru Disini</div>
     </div>
 
+    <!-- 2. HALAMAN REGISTRASI -->
     <div id="registerCard" class="card">
         <div class="form-group">
             <label>Nama Lengkap</label>
@@ -95,6 +97,7 @@
         <div class="link-btn" onclick="switchCard('loginCard')">Sudah punya akun? Kembali ke Login</div>
     </div>
 
+    <!-- 3. HALAMAN DASHBOARD -->
     <div id="dashboardCard" class="card">
         <div class="dashboard-header">
             <div class="welcome-text" id="welcomeText">Halo, Pegawai 👋</div>
@@ -105,6 +108,7 @@
             <strong>Sistem Multi-Akun Cloud Aktif:</strong> Setiap pegawai diizinkan menyimpan maksimal <strong>10 akun website</strong>. Akun Anda ditandai warna biru di posisi teratas.
         </div>
 
+        <!-- FORM TAMBAH / EDIT AKUN -->
         <div id="userCrudSection">
             <h3 style="margin-bottom: 10px; font-size: 1.1rem;">➕ Tambah / Perbarui Website Saya <span class="counter-badge" id="accountCounter">0 / 10 Akun</span></h3>
             <div class="crud-box">
@@ -124,6 +128,7 @@
             </div>
         </div>
 
+        <!-- TABEL UTAMA -->
         <div class="table-responsive">
             <table>
                 <thead>
@@ -136,10 +141,12 @@
                     </tr>
                 </thead>
                 <tbody id="passwordTableBody">
-                    </tbody>
+                    <!-- Diisi via API -->
+                </tbody>
             </table>
         </div>
 
+        <!-- PANEL ADMIN -->
         <div id="adminPanel" class="admin-section">
             <h3 style="font-size: 1.1rem; margin-bottom: 5px;">🛠️ Panel Admin (Reset Username)</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Cari menggunakan NIP untuk merubah username rekan kerja yang lupa.</p>
@@ -163,10 +170,11 @@
 </div>
 
 <script>
-    // Taruh URL Google Web App Anda di bawah ini
+    // ⚠️ PASTIKAN ANDA MENGGANTI TULISAN DI BAWAH INI DENGAN URL GOOGLE SCRIPT ANDA
     const API_URL = "https://script.google.com/macros/s/AKfycbxZaJNYzZx8XQs7qYTa9lNTEuW4yXq4J-QNwUbh0QvKpBqeIVA83BJqrBYZT0utIjMB2g/exec";
 
     let currentUser = null;
+    let globalUsersData = [];
 
     function toggleLoading(show) {
         document.getElementById('loading').style.display = show ? 'block' : 'none';
@@ -177,21 +185,13 @@
         document.getElementById(cardId).classList.add('active');
     }
 
-    async function sendRequest(data) {
-        toggleLoading(true);
-        try {
-            let response = await fetch(API_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            });
-            toggleLoading(false);
-            return response;
-        } catch (e) {
-            toggleLoading(false);
-            alert("Terjadi kesalahan jaringan/database!");
-        }
+    function sendRequest(data) {
+        fetch(API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        }).catch(e => console.log("Background sync berjalan"));
     }
 
     async function fetchDatabase() {
@@ -219,10 +219,20 @@
         if(!nama || !nip || !username) return alert("⚠️ Mohon lengkapi seluruh kolom registrasi!");
         if(username === "luf3159" || nip === "199805302025061001") return alert("⚠️ Kredensial Admin Utama Dilindungi!");
 
-        let users = await fetchDatabase();
-        if (users.some(u => u.username === username || u.nip === nip)) return alert("⚠️ Username/NIP sudah terdaftar!");
+        toggleLoading(true);
+        globalUsersData = await fetchDatabase();
+        if (globalUsersData.some(u => u.username === username || u.nip === nip)) {
+            toggleLoading(false);
+            return alert("⚠️ Username/NIP sudah terdaftar!");
+        }
 
-        await sendRequest({ action: "register", nama: nama, nip: nip, username: username });
+        await fetch(API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "register", nama: nama, nip: nip, username: username })
+        });
+        toggleLoading(false);
         
         alert("🎉 Registrasi sukses tersimpan! Silakan login.");
         switchCard('loginCard');
@@ -237,43 +247,37 @@
             document.getElementById('welcomeText').innerHTML = `Halo, <strong>Admin Utama</strong> <span class="badge-admin">Admin Mode</span> 👋`;
             document.getElementById('adminPanel').style.display = 'block';
             document.getElementById('userCrudSection').style.display = 'none';
-            await renderTable();
+            globalUsersData = await fetchDatabase();
+            renderTable();
             switchCard('dashboardCard');
             return;
         }
 
-        let users = await fetchDatabase();
-        const user = users.find(u => u.username === usernameInput);
+        globalUsersData = await fetchDatabase();
+        const user = globalUsersData.find(u => u.username === usernameInput);
         
         if (user) {
             currentUser = user;
             document.getElementById('welcomeText').innerHTML = `Halo, <strong>${user.nama}</strong> 👋`;
             document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('userCrudSection').style.display = 'block';
-            await renderTable();
+            renderTable();
             switchCard('dashboardCard');
         } else {
             alert(`❌ Username "${usernameInput}" tidak ditemukan!`);
         }
     }
 
-    async function renderTable() {
+    function renderTable() {
         if (!currentUser) return; 
-        
-        let users = await fetchDatabase();
-        
-        if (currentUser.username !== "luf3159") {
-            currentUser = users.find(u => u.nip === currentUser.nip);
-        }
         
         const tbody = document.getElementById('passwordTableBody');
         tbody.innerHTML = "";
 
-        const userAccounts = currentUser ? (currentUser.accounts || []) : [];
+        const userAccounts = currentUser.accounts || [];
         document.getElementById('accountCounter').innerText = `${userAccounts.length} / 10 Akun`;
 
-        // Render Akun Pribadi Anda
-        userAccounts.forEach((acc, index) => {
+        userAccounts.forEach((acc) => {
             const tr = document.createElement('tr');
             tr.classList.add('highlight');
             tr.innerHTML = `
@@ -286,8 +290,7 @@
             tbody.appendChild(tr);
         });
 
-        // Render Akun Pegawai Lain
-        users.filter(u => u.nip !== currentUser.nip).forEach(otherUser => {
+        globalUsersData.filter(u => u.nip !== currentUser.nip && u.username !== "luf3159").forEach(otherUser => {
             (otherUser.accounts || []).forEach(acc => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -302,34 +305,47 @@
         });
     }
 
-    async function addOrUpdateAccount() {
+    function addOrUpdateAccount() {
         const platform = document.getElementById('inputPlatform').value.trim();
         const userWeb = document.getElementById('inputUserWeb').value.trim();
         const pass = document.getElementById('inputPassword').value.trim();
 
         if(!platform || !userWeb || !pass) return alert("⚠️ Isi semua kolom website, username, dan password!");
 
-        if (currentUser.accounts.length >= 10) {
-            let isUpdate = currentUser.accounts.some(acc => acc.platform.toLowerCase() === platform.toLowerCase() && acc.userWeb.toLowerCase() === userWeb.toLowerCase());
-            if (!isUpdate) {
-                alert("❌ Batas Maksimal 10 Akun Tercapai!");
-                return;
+        if (!currentUser.accounts) currentUser.accounts = [];
+        let isUpdate = false;
+        
+        for (let i = 0; i < currentUser.accounts.length; i++) {
+            if (currentUser.accounts[i].platform.toLowerCase() === platform.toLowerCase() && 
+                currentUser.accounts[i].userWeb.toLowerCase() === userWeb.toLowerCase()) {
+                currentUser.accounts[i].pass = pass; 
+                isUpdate = true;
+                break;
             }
         }
 
-        await sendRequest({ action: "addOrUpdateAccount", nip: currentUser.nip, platform: platform, userWeb: userWeb, pass: pass });
-        
+        if (!isUpdate) {
+            if (currentUser.accounts.length >= 10) return alert("❌ Batas Maksimal 10 Akun Tercapai!");
+            currentUser.accounts.push({ platform, userWeb, pass });
+        }
+
         document.getElementById('inputPlatform').value = '';
         document.getElementById('inputUserWeb').value = '';
         document.getElementById('inputPassword').value = '';
-        
-        setTimeout(async () => { await renderTable(); }, 1200);
+        renderTable();
+
+        sendRequest({ action: "addOrUpdateAccount", nip: currentUser.nip, platform: platform, userWeb: userWeb, pass: pass });
     }
 
-    async function deleteAccount(platformName, userWebName) {
+    function deleteAccount(platformName, userWebName) {
         if(!confirm(`Hapus akun ${platformName} dengan username ${userWebName}?`)) return;
-        await sendRequest({ action: "deleteAccount", nip: currentUser.nip, platform: platformName, userWeb: userWebName });
-        setTimeout(async () => { await renderTable(); }, 1200);
+        
+        currentUser.accounts = currentUser.accounts.filter(acc => 
+            !(acc.platform === platformName && acc.userWeb === userWebName)
+        );
+        renderTable();
+
+        sendRequest({ action: "deleteAccount", nip: currentUser.nip, platform: platformName, userWeb: userWebName });
     }
 
     function logout() {
@@ -340,18 +356,16 @@
     }
 
     let adminPegawaiIndex = null;
-    let cachedUsers = [];
     
     async function adminCariPegawai() {
         const searchNip = document.getElementById('adminSearchNip').value.trim();
         if(!searchNip) return alert("⚠️ Isi nomor NIP!");
 
-        cachedUsers = await fetchDatabase();
-        adminPegawaiIndex = cachedUsers.findIndex(u => u.nip === searchNip);
+        adminPegawaiIndex = globalUsersData.findIndex(u => u.nip === searchNip);
         
         if(adminPegawaiIndex !== -1) {
-            document.getElementById('adminNamaPegawai').innerText = cachedUsers[adminPegawaiIndex].nama;
-            document.getElementById('adminNewUsername').value = cachedUsers[adminPegawaiIndex].username;
+            document.getElementById('adminNamaPegawai').innerText = globalUsersData[adminPegawaiIndex].nama;
+            document.getElementById('adminNewUsername').value = globalUsersData[adminPegawaiIndex].username;
             document.getElementById('adminEditForm').style.display = 'block';
         } else {
             alert("❌ Pegawai tidak ditemukan.");
@@ -359,19 +373,20 @@
         }
     }
 
-    async function adminUpdateUsername() {
+    function adminUpdateUsername() {
         const newUsername = document.getElementById('adminNewUsername').value.trim().toLowerCase();
         if(!newUsername) return alert("⚠️ Username baru kosong!");
 
-        const isExist = cachedUsers.some((u, idx) => u.username === newUsername && idx !== adminPegawaiIndex);
+        const isExist = globalUsersData.some((u, idx) => u.username === newUsername && idx !== adminPegawaiIndex);
         if(isExist) return alert("⚠️ Username sudah terpakai.");
 
-        await sendRequest({ action: "adminUpdateUsername", nip: cachedUsers[adminPegawaiIndex].nip, newUsername: newUsername });
+        globalUsersData[adminPegawaiIndex].username = newUsername;
+        
+        sendRequest({ action: "adminUpdateUsername", nip: globalUsersData[adminPegawaiIndex].nip, newUsername: newUsername });
         
         alert("✅ Username berhasil diperbarui!");
         document.getElementById('adminEditForm').style.display = 'none';
         document.getElementById('adminSearchNip').value = "";
-        setTimeout(async () => { await renderTable(); }, 1200);
     }
 </script>
 </body>
