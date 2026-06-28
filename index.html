@@ -1,9 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAKLUPPPA - Portal Anti Lupa DPPPA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #f4f7fc;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --text-muted: #64748b;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --highlight-bg: #eff6ff;
+        }
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+        body { background-color: var(--bg-body); color: var(--dark); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background: var(--card-bg); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); width: 100%; max-width: 950px; }
+        .header-app { text-align: center; margin-bottom: 35px; }
+        .header-app h1 { font-size: 2rem; color: var(--primary); font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .header-app h4 { color: var(--text-muted); font-weight: 400; font-size: 0.95rem; margin-top: 5px; }
+        .card { display: none; }
+        .card.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; }
+        input { width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; background-color: #f8fafc; color: var(--dark); transition: all 0.2s; }
+        input:focus { outline: none; border-color: var(--primary); background-color: #fff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        button { padding: 12px 20px; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-secondary { background: #e2e8f0; color: var(--dark); }
+        .link-btn { text-align: center; margin-top: 20px; color: var(--primary); cursor: pointer; font-size: 0.9rem; font-weight: 500; }
+        .link-btn:hover { text-decoration: underline; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+        .welcome-text { font-size: 1.25rem; font-weight: 600; }
+        .notice { background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 8px; font-size: 0.85rem; color: #b45309; margin-bottom: 20px; }
+        .counter-badge { background: #e2e8f0; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; float: right; }
+        .crud-box { background: #f8fafc; border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; margin-bottom: 25px; display: flex; gap: 15px; align-items: flex-end; }
+        .crud-box .form-group { margin-bottom: 0; flex: 1; }
+        .table-responsive { width: 100%; overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; background: #fff; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left; }
+        th, td { padding: 14px 16px; vertical-align: middle; }
+        th { background-color: #f8fafc; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+        tr { border-bottom: 1px solid var(--border-color); }
+        tr.highlight { background-color: var(--highlight-bg); }
+        .blur { filter: blur(5px); user-select: none; opacity: 0.5; }
+        .badge-me { background-color: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; margin-left: 5px; }
+        .badge-admin { background-color: #8b5cf6; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; margin-left: 5px; }
+        .btn-del { padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; }
+        .admin-section { display: none; padding: 25px; border-radius: 14px; background: #f8fafc; border: 1px dashed var(--border-color); }
+        .loading-overlay { display:none; text-align: center; color: var(--primary); font-weight: 600; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-app">
+        <h1>💡 GAKLUPPPA</h1>
+        <h4>Gerbang Akses Kelompok Lupa-Lupa DPPPA</h4>
+    </div>
+
+    <div id="loading" class="loading-overlay">🔄 Memproses data ke Spreadsheet...</div>
+
+    <div id="loginCard" class="card active">
+        <div class="form-group">
+            <label>Username Anda</label>
+            <input type="text" id="loginUsername" placeholder="Masukkan username Anda...">
+        </div>
+        <button class="btn-primary" onclick="login()">Masuk Sistem</button>
+        <div class="link-btn" onclick="switchCard('registerCard')">Belum terdaftar? Registrasi Akun Baru Disini</div>
+    </div>
+
+    <div id="registerCard" class="card">
+        <div class="form-group">
+            <label>Nama Lengkap</label>
+            <input type="text" id="regNama" placeholder="Nama Lengkap">
+        </div>
+        <div class="form-group">
+            <label>NIP</label>
+            <input type="text" id="regNip" placeholder="NIP Pegawai">
+        </div>
+        <div class="form-group">
+            <label>Username Aplikasi</label>
+            <input type="text" id="regUsername" placeholder="Username untuk login">
+        </div>
+        <button class="btn-primary" onclick="register()">Daftar Akun Baru</button>
+        <div class="link-btn" onclick="switchCard('loginCard')">Sudah punya akun? Kembali ke Login</div>
+    </div>
+
+    <div id="dashboardCard" class="card">
+        <div class="dashboard-header">
+            <div class="welcome-text" id="welcomeText">Halo, Pegawai 👋</div>
+            <button class="btn-danger" style="padding: 8px 16px; font-size: 0.85rem;" onclick="logout()">Keluar</button>
+        </div>
+
+        <div class="notice">
+            <strong>Sistem Multi-Akun Cloud Aktif:</strong> Setiap pegawai diizinkan menyimpan maksimal <strong>10 akun website</strong>. Akun Anda ditandai warna biru di posisi teratas.
+        </div>
+
+        <div id="userCrudSection">
+            <h3 style="margin-bottom: 10px; font-size: 1.1rem;">➕ Tambah / Perbarui Website Saya <span class="counter-badge" id="accountCounter">0 / 10 Akun</span></h3>
+            <div class="crud-box">
+                <div class="form-group">
+                    <label>Nama Website</label>
+                    <input type="text" id="inputPlatform" placeholder="Contoh: SIMPEG, E-Kinerja">
+                </div>
+                <div class="form-group">
+                    <label>Username Web Tersebut</label>
+                    <input type="text" id="inputUserWeb" placeholder="Username akun website">
+                </div>
+                <div class="form-group">
+                    <label>Password Web Tersebut</label>
+                    <input type="text" id="inputPassword" placeholder="Password akun website">
+                </div>
+                <button class="btn-success" onclick="addOrUpdateAccount()">Simpan Akun</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pegawai (NIP)</th>
+                        <th>Nama Website</th>
+                        <th>Username Website</th>
+                        <th>Password Website</th>
+                        <th style="width: 100px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="passwordTableBody">
+                    </tbody>
+            </table>
+        </div>
+
+        <div id="adminPanel" class="admin-section">
+            <h3 style="font-size: 1.1rem; margin-bottom: 5px;">🛠️ Panel Admin (Reset Username)</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Cari menggunakan NIP untuk merubah username rekan kerja yang lupa.</p>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="adminSearchNip" placeholder="Masukkan NIP Pegawai...">
+                <button class="btn-primary" style="width: auto;" onclick="adminCariPegawai()">Cari</button>
+            </div>
+            
+            <div id="adminEditForm" style="display: none; background: #fff; padding: 20px; border-radius: 10px; margin-top: 15px; border: 1px solid var(--border-color);">
+                <div class="form-group">
+                    <label>Pegawai: <span id="adminNamaPegawai" style="color: var(--primary); font-weight: 600;"></span></label>
+                </div>
+                <div class="form-group">
+                    <label>Username Baru</label>
+                    <input type="text" id="adminNewUsername">
+                </div>
+                <button class="btn-secondary" onclick="adminUpdateUsername()">Simpan Username</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     // Taruh URL Google Web App Anda di bawah ini
     const API_URL = "https://script.google.com/macros/s/AKfycbxZaJNYzZx8XQs7qYTa9lNTEuW4yXq4J-QNwUbh0QvKpBqeIVA83BJqrBYZT0utIjMB2g/exec";
 
     let currentUser = null;
-    let globalUsersData = []; // Menyimpan memori lokal agar tidak perlu loading berulang
 
     function toggleLoading(show) {
         document.getElementById('loading').style.display = show ? 'block' : 'none';
@@ -14,17 +177,23 @@
         document.getElementById(cardId).classList.add('active');
     }
 
-    // Fungsi kirim data secara diam-diam (Background Sync) - Tanpa mengunci layar
-    function sendRequest(data) {
-        fetch(API_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        }).catch(e => console.log("Background sync berjalan"));
+    async function sendRequest(data) {
+        toggleLoading(true);
+        try {
+            let response = await fetch(API_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            toggleLoading(false);
+            return response;
+        } catch (e) {
+            toggleLoading(false);
+            alert("Terjadi kesalahan jaringan/database!");
+        }
     }
 
-    // Fungsi ambil data utama (Hanya dipanggil saat Login)
     async function fetchDatabase() {
         toggleLoading(true);
         try {
@@ -50,20 +219,10 @@
         if(!nama || !nip || !username) return alert("⚠️ Mohon lengkapi seluruh kolom registrasi!");
         if(username === "luf3159" || nip === "199805302025061001") return alert("⚠️ Kredensial Admin Utama Dilindungi!");
 
-        toggleLoading(true);
-        globalUsersData = await fetchDatabase();
-        if (globalUsersData.some(u => u.username === username || u.nip === nip)) {
-            toggleLoading(false);
-            return alert("⚠️ Username/NIP sudah terdaftar!");
-        }
+        let users = await fetchDatabase();
+        if (users.some(u => u.username === username || u.nip === nip)) return alert("⚠️ Username/NIP sudah terdaftar!");
 
-        await fetch(API_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "register", nama: nama, nip: nip, username: username })
-        });
-        toggleLoading(false);
+        await sendRequest({ action: "register", nama: nama, nip: nip, username: username });
         
         alert("🎉 Registrasi sukses tersimpan! Silakan login.");
         switchCard('loginCard');
@@ -73,46 +232,48 @@
         const usernameInput = document.getElementById('loginUsername').value.replace(/\s+/g, '').toLowerCase();
         if(!usernameInput) return alert("⚠️ Masukkan username!");
 
-        // Logika Khusus Admin Utama
         if (usernameInput === "luf3159") {
             currentUser = { nama: "Admin Utama", nip: "199805302025061001", username: "luf3159", accounts: [] };
             document.getElementById('welcomeText').innerHTML = `Halo, <strong>Admin Utama</strong> <span class="badge-admin">Admin Mode</span> 👋`;
             document.getElementById('adminPanel').style.display = 'block';
             document.getElementById('userCrudSection').style.display = 'none';
-            globalUsersData = await fetchDatabase(); // Ambil data untuk tabel pegawai lain
-            renderTable(); // Render instan
+            await renderTable();
             switchCard('dashboardCard');
             return;
         }
 
-        // Ambil data hanya sekali saat login
-        globalUsersData = await fetchDatabase();
-        const user = globalUsersData.find(u => u.username === usernameInput);
+        let users = await fetchDatabase();
+        const user = users.find(u => u.username === usernameInput);
         
         if (user) {
             currentUser = user;
             document.getElementById('welcomeText').innerHTML = `Halo, <strong>${user.nama}</strong> 👋`;
             document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('userCrudSection').style.display = 'block';
-            renderTable(); // Render instan dari memori
+            await renderTable();
             switchCard('dashboardCard');
         } else {
             alert(`❌ Username "${usernameInput}" tidak ditemukan!`);
         }
     }
 
-    // Fungsi render sekarang sinkron (Instan 0 detik)
-    function renderTable() {
+    async function renderTable() {
         if (!currentUser) return; 
+        
+        let users = await fetchDatabase();
+        
+        if (currentUser.username !== "luf3159") {
+            currentUser = users.find(u => u.nip === currentUser.nip);
+        }
         
         const tbody = document.getElementById('passwordTableBody');
         tbody.innerHTML = "";
 
-        const userAccounts = currentUser.accounts || [];
+        const userAccounts = currentUser ? (currentUser.accounts || []) : [];
         document.getElementById('accountCounter').innerText = `${userAccounts.length} / 10 Akun`;
 
         // Render Akun Pribadi Anda
-        userAccounts.forEach((acc) => {
+        userAccounts.forEach((acc, index) => {
             const tr = document.createElement('tr');
             tr.classList.add('highlight');
             tr.innerHTML = `
@@ -125,8 +286,8 @@
             tbody.appendChild(tr);
         });
 
-        // Render Akun Pegawai Lain dari Memori Lokal
-        globalUsersData.filter(u => u.nip !== currentUser.nip && u.username !== "luf3159").forEach(otherUser => {
+        // Render Akun Pegawai Lain
+        users.filter(u => u.nip !== currentUser.nip).forEach(otherUser => {
             (otherUser.accounts || []).forEach(acc => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -141,52 +302,34 @@
         });
     }
 
-    function addOrUpdateAccount() {
+    async function addOrUpdateAccount() {
         const platform = document.getElementById('inputPlatform').value.trim();
         const userWeb = document.getElementById('inputUserWeb').value.trim();
         const pass = document.getElementById('inputPassword').value.trim();
 
         if(!platform || !userWeb || !pass) return alert("⚠️ Isi semua kolom website, username, dan password!");
 
-        // 1. UPDATE MEMORI LOKAL SEKETIKA
-        if (!currentUser.accounts) currentUser.accounts = [];
-        let isUpdate = false;
-        
-        for (let i = 0; i < currentUser.accounts.length; i++) {
-            if (currentUser.accounts[i].platform.toLowerCase() === platform.toLowerCase() && 
-                currentUser.accounts[i].userWeb.toLowerCase() === userWeb.toLowerCase()) {
-                currentUser.accounts[i].pass = pass; 
-                isUpdate = true;
-                break;
+        if (currentUser.accounts.length >= 10) {
+            let isUpdate = currentUser.accounts.some(acc => acc.platform.toLowerCase() === platform.toLowerCase() && acc.userWeb.toLowerCase() === userWeb.toLowerCase());
+            if (!isUpdate) {
+                alert("❌ Batas Maksimal 10 Akun Tercapai!");
+                return;
             }
         }
 
-        if (!isUpdate) {
-            if (currentUser.accounts.length >= 10) return alert("❌ Batas Maksimal 10 Akun Tercapai!");
-            currentUser.accounts.push({ platform, userWeb, pass });
-        }
-
-        // 2. PERBARUI LAYAR DALAM 0 DETIK
+        await sendRequest({ action: "addOrUpdateAccount", nip: currentUser.nip, platform: platform, userWeb: userWeb, pass: pass });
+        
         document.getElementById('inputPlatform').value = '';
         document.getElementById('inputUserWeb').value = '';
         document.getElementById('inputPassword').value = '';
-        renderTable();
-
-        // 3. KIRIM KE GOOGLE SHEETS DIAM-DIAM DI LATAR BELAKANG
-        sendRequest({ action: "addOrUpdateAccount", nip: currentUser.nip, platform: platform, userWeb: userWeb, pass: pass });
+        
+        setTimeout(async () => { await renderTable(); }, 1200);
     }
 
-    function deleteAccount(platformName, userWebName) {
+    async function deleteAccount(platformName, userWebName) {
         if(!confirm(`Hapus akun ${platformName} dengan username ${userWebName}?`)) return;
-        
-        // 1. HAPUS DARI MEMORI LOKAL & PERBARUI LAYAR SEKETIKA
-        currentUser.accounts = currentUser.accounts.filter(acc => 
-            !(acc.platform === platformName && acc.userWeb === userWebName)
-        );
-        renderTable();
-
-        // 2. HAPUS DI GOOGLE SHEETS SECARA DIAM-DIAM
-        sendRequest({ action: "deleteAccount", nip: currentUser.nip, platform: platformName, userWeb: userWebName });
+        await sendRequest({ action: "deleteAccount", nip: currentUser.nip, platform: platformName, userWeb: userWebName });
+        setTimeout(async () => { await renderTable(); }, 1200);
     }
 
     function logout() {
@@ -197,16 +340,18 @@
     }
 
     let adminPegawaiIndex = null;
+    let cachedUsers = [];
     
     async function adminCariPegawai() {
         const searchNip = document.getElementById('adminSearchNip').value.trim();
         if(!searchNip) return alert("⚠️ Isi nomor NIP!");
 
-        adminPegawaiIndex = globalUsersData.findIndex(u => u.nip === searchNip);
+        cachedUsers = await fetchDatabase();
+        adminPegawaiIndex = cachedUsers.findIndex(u => u.nip === searchNip);
         
         if(adminPegawaiIndex !== -1) {
-            document.getElementById('adminNamaPegawai').innerText = globalUsersData[adminPegawaiIndex].nama;
-            document.getElementById('adminNewUsername').value = globalUsersData[adminPegawaiIndex].username;
+            document.getElementById('adminNamaPegawai').innerText = cachedUsers[adminPegawaiIndex].nama;
+            document.getElementById('adminNewUsername').value = cachedUsers[adminPegawaiIndex].username;
             document.getElementById('adminEditForm').style.display = 'block';
         } else {
             alert("❌ Pegawai tidak ditemukan.");
@@ -214,21 +359,20 @@
         }
     }
 
-    function adminUpdateUsername() {
+    async function adminUpdateUsername() {
         const newUsername = document.getElementById('adminNewUsername').value.trim().toLowerCase();
         if(!newUsername) return alert("⚠️ Username baru kosong!");
 
-        const isExist = globalUsersData.some((u, idx) => u.username === newUsername && idx !== adminPegawaiIndex);
+        const isExist = cachedUsers.some((u, idx) => u.username === newUsername && idx !== adminPegawaiIndex);
         if(isExist) return alert("⚠️ Username sudah terpakai.");
 
-        // Update Memori Lokal (Instan)
-        globalUsersData[adminPegawaiIndex].username = newUsername;
-        
-        // Kirim ke cloud diam-diam
-        sendRequest({ action: "adminUpdateUsername", nip: globalUsersData[adminPegawaiIndex].nip, newUsername: newUsername });
+        await sendRequest({ action: "adminUpdateUsername", nip: cachedUsers[adminPegawaiIndex].nip, newUsername: newUsername });
         
         alert("✅ Username berhasil diperbarui!");
         document.getElementById('adminEditForm').style.display = 'none';
         document.getElementById('adminSearchNip').value = "";
+        setTimeout(async () => { await renderTable(); }, 1200);
     }
 </script>
+</body>
+</html>
