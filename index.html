@@ -21,42 +21,66 @@
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
         body { background-color: var(--bg-body); color: var(--dark); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .container { background: var(--card-bg); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); width: 100%; max-width: 950px; }
+        
         .header-app { text-align: center; margin-bottom: 35px; }
         .header-app h1 { font-size: 2rem; color: var(--primary); font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .header-app h4 { color: var(--text-muted); font-weight: 400; font-size: 0.95rem; margin-top: 5px; }
+        
         .card { display: none; }
         .card.active { display: block; animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; }
         input { width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; background-color: #f8fafc; color: var(--dark); transition: all 0.2s; }
         input:focus { outline: none; border-color: var(--primary); background-color: #fff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        
         button { padding: 12px 20px; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .btn-primary { background: var(--primary); color: white; width: 100%; }
         .btn-primary:hover { background: var(--primary-hover); }
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-secondary { background: #e2e8f0; color: var(--dark); }
+        
         .link-btn { text-align: center; margin-top: 20px; color: var(--primary); cursor: pointer; font-size: 0.9rem; font-weight: 500; }
         .link-btn:hover { text-decoration: underline; }
+        
         .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
         .welcome-text { font-size: 1.25rem; font-weight: 600; }
+        
         .notice { background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 8px; font-size: 0.85rem; color: #b45309; margin-bottom: 20px; }
         .counter-badge { background: #e2e8f0; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; float: right; }
+        
         .crud-box { background: #f8fafc; border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; margin-bottom: 25px; display: flex; gap: 15px; align-items: flex-end; }
         .crud-box .form-group { margin-bottom: 0; flex: 1; }
+        
         .table-responsive { width: 100%; overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; background: #fff; margin-bottom: 30px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left; white-space: nowrap; }
         th, td { padding: 14px 16px; vertical-align: middle; }
         th { background-color: #f8fafc; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
         tr { border-bottom: 1px solid var(--border-color); }
         tr.highlight { background-color: var(--highlight-bg); }
+        
         .blur { filter: blur(5px); user-select: none; opacity: 0.5; }
         .badge-me { background-color: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; margin-left: 5px; }
         .badge-admin { background-color: #8b5cf6; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; margin-left: 5px; }
+        .badge-status { background-color: #e2e8f0; color: var(--dark); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
         .btn-del { padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; }
+        
         .admin-section { display: none; padding: 25px; border-radius: 14px; background: #f8fafc; border: 1px dashed var(--border-color); }
         .loading-overlay { display:none; text-align: center; color: var(--primary); font-weight: 600; margin-bottom: 15px; }
+
+        /* Media Queries untuk Mobile & Tablet (Responsive) */
+        @media screen and (max-width: 768px) {
+            .container { padding: 20px; }
+            .dashboard-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .dashboard-header button { width: 100%; }
+            .crud-box { flex-direction: column; align-items: stretch; gap: 15px; padding: 15px; }
+            .crud-box .form-group { width: 100%; }
+            .crud-box button { width: 100%; padding: 14px; }
+            .counter-badge { float: none; display: inline-block; margin-top: 5px; }
+            th, td { padding: 12px 10px; }
+        }
     </style>
 </head>
 <body>
@@ -117,12 +141,12 @@
                     <input type="text" id="inputPlatform" placeholder="Contoh: SIMPEG, E-Kinerja">
                 </div>
                 <div class="form-group">
-                    <label>Username Web Tersebut</label>
-                    <input type="text" id="inputUserWeb" placeholder="Username akun website">
+                    <label>Username Web</label>
+                    <input type="text" id="inputUserWeb" placeholder="Username website">
                 </div>
                 <div class="form-group">
-                    <label>Password Web Tersebut</label>
-                    <input type="text" id="inputPassword" placeholder="Password akun website">
+                    <label>Password Web</label>
+                    <input type="text" id="inputPassword" placeholder="Password website">
                 </div>
                 <button class="btn-success" onclick="addOrUpdateAccount()">Simpan Akun</button>
             </div>
@@ -150,8 +174,8 @@
         <div id="adminPanel" class="admin-section">
             <h3 style="font-size: 1.1rem; margin-bottom: 5px;">🛠️ Panel Admin (Reset Username)</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Cari menggunakan NIP untuk merubah username rekan kerja yang lupa.</p>
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="adminSearchNip" placeholder="Masukkan NIP Pegawai...">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" id="adminSearchNip" placeholder="Masukkan NIP Pegawai..." style="flex: 1; min-width: 200px;">
                 <button class="btn-primary" style="width: auto;" onclick="adminCariPegawai()">Cari</button>
             </div>
             
@@ -170,8 +194,8 @@
 </div>
 
 <script>
-    // ⚠️ PASTIKAN ANDA MENGGANTI TULISAN DI BAWAH INI DENGAN URL GOOGLE SCRIPT ANDA
-    const API_URL = "https://script.google.com/macros/s/AKfycbxZaJNYzZx8XQs7qYTa9lNTEuW4yXq4J-QNwUbh0QvKpBqeIVA83BJqrBYZT0utIjMB2g/exec";
+    // ⚠️ MASUKKAN KEMBALI URL GOOGLE SCRIPT ANDA DI SINI
+    const API_URL = "link";
 
     let currentUser = null;
     let globalUsersData = [];
@@ -277,6 +301,7 @@
         const userAccounts = currentUser.accounts || [];
         document.getElementById('accountCounter').innerText = `${userAccounts.length} / 10 Akun`;
 
+        // Render Akun Pribadi (Tampilkan Semua Detail)
         userAccounts.forEach((acc) => {
             const tr = document.createElement('tr');
             tr.classList.add('highlight');
@@ -290,18 +315,20 @@
             tbody.appendChild(tr);
         });
 
+        // Render Akun Pegawai Lain (Hanya 1 Baris Informasi Saja)
         globalUsersData.filter(u => u.nip !== currentUser.nip && u.username !== "luf3159").forEach(otherUser => {
-            (otherUser.accounts || []).forEach(acc => {
+            // Cek apakah pegawai lain tersebut memiliki minimal 1 data website
+            if (otherUser.accounts && otherUser.accounts.length > 0) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>${otherUser.nama}</strong><br><small style="color:var(--text-muted)">NIP: ${otherUser.nip}</small></td>
-                    <td>${acc.platform}</td>
+                    <td><span class="blur">Terlindungi</span></td>
                     <td><span class="blur">••••••••••••</span></td>
                     <td><span class="blur">••••••••••••</span></td>
-                    <td>-</td>
+                    <td><span class="badge-status">Telah Input Data</span></td>
                 `;
                 tbody.appendChild(tr);
-            });
+            }
         });
     }
 
