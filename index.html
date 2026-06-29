@@ -82,6 +82,17 @@
         .badge-status { background-color: #e2e8f0; color: var(--dark); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
         .btn-del { padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; }
         
+        /* Tombol Copy */
+        .copy-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 4px; margin-left: 10px; opacity: 0.6; transition: opacity 0.2s; border-radius: 6px; }
+        .copy-btn:hover { opacity: 1; background-color: #e2e8f0; }
+        .flex-td { display: flex; align-items: center; justify-content: space-between; }
+
+        /* Notifikasi Toast */
+        #toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: var(--dark); color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; font-size: 0.9rem; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        #toast.show { visibility: visible; animation: fadein 0.3s, fadeout 0.4s 2.6s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
         .admin-section { display: none; padding: 25px; border-radius: 14px; background: #f8fafc; border: 1px dashed var(--border-color); }
         .loading-overlay { display:none; text-align: center; color: var(--primary); font-weight: 600; margin-bottom: 15px; }
 
@@ -98,6 +109,8 @@
     </style>
 </head>
 <body>
+
+<div id="toast">✅ Berhasil disalin ke clipboard!</div>
 
 <div class="container">
     <div class="header-app">
@@ -204,11 +217,22 @@
 </div>
 
 <script>
-    // ⚠️ GANTI TULISAN DI BAWAH INI DENGAN URL GOOGLE SCRIPT ANDA YANG SEBENARNYA
+    // ⚠️ GANTI TULISAN DI BAWAH INI DENGAN URL GOOGLE SCRIPT ANDA
     const API_URL = "https://script.google.com/macros/s/AKfycbxZaJNYzZx8XQs7qYTa9lNTEuW4yXq4J-QNwUbh0QvKpBqeIVA83BJqrBYZT0utIjMB2g/exec";
 
     let currentUser = null;
     let globalUsersData = [];
+
+    // Fungsi Copy ke Clipboard
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            const toast = document.getElementById("toast");
+            toast.className = "show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+        }).catch(err => {
+            alert("⚠️ Gagal menyalin teks. Browser Anda mungkin tidak mendukung fitur ini.");
+        });
+    }
 
     function toggleLoading(show) {
         document.getElementById('loading').style.display = show ? 'block' : 'none';
@@ -311,19 +335,36 @@
         const userAccounts = currentUser.accounts || [];
         document.getElementById('accountCounter').innerText = `${userAccounts.length} / 10 Akun`;
 
+        // Render Akun Pribadi (Tampilkan Semua Detail + Tombol Salin)
         userAccounts.forEach((acc) => {
             const tr = document.createElement('tr');
             tr.classList.add('highlight');
+            
+            // Pengamanan karakter string untuk data-text
+            const safeUserWeb = acc.userWeb.replace(/"/g, '&quot;');
+            const safePass = acc.pass.replace(/"/g, '&quot;');
+
             tr.innerHTML = `
                 <td><strong>${currentUser.nama}</strong><br><small style="color:var(--text-muted)">NIP: ${currentUser.nip} <span class="badge-me">Anda</span></small></td>
                 <td style="font-weight:600;">${acc.platform}</td>
-                <td style="font-weight:500; color: #475569;">${acc.userWeb}</td>
-                <td><span style="color: var(--primary); font-weight:600;">${acc.pass}</span></td>
+                <td>
+                    <div class="flex-td">
+                        <span style="font-weight:500; color: #475569;">${acc.userWeb}</span>
+                        <button class="copy-btn" data-text="${safeUserWeb}" onclick="copyToClipboard(this.getAttribute('data-text'))" title="Salin Username">📋</button>
+                    </div>
+                </td>
+                <td>
+                    <div class="flex-td">
+                        <span style="color: var(--primary); font-weight:600;">${acc.pass}</span>
+                        <button class="copy-btn" data-text="${safePass}" onclick="copyToClipboard(this.getAttribute('data-text'))" title="Salin Password">📋</button>
+                    </div>
+                </td>
                 <td><button class="btn-danger btn-del" onclick="deleteAccount('${acc.platform}', '${acc.userWeb}')">Hapus</button></td>
             `;
             tbody.appendChild(tr);
         });
 
+        // Render Akun Pegawai Lain (Hanya 1 Baris Informasi Saja, Tidak bisa disalin)
         globalUsersData.filter(u => u.nip !== currentUser.nip && u.username !== "luf3159").forEach(otherUser => {
             if (otherUser.accounts && otherUser.accounts.length > 0) {
                 const tr = document.createElement('tr');
